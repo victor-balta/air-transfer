@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="AirTransfer">
+    <link rel="manifest" href="/static/manifest.json">
+    <link rel="apple-touch-icon" href="/static/icon-192.png">
+    <link rel="icon" type="image/png" href="/static/icon-192.png">
+    <title>AirTransfer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-glass: rgba(30, 41, 59, 0.7);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-primary: #3b82f6;
+            --accent-secondary: #8b5cf6;
+            --accent-gradient: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            --success: #10b981;
+            --error: #ef4444;
+            --glow: 0 0 20px rgba(59, 130, 246, 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        /* Animated background gradient */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 20%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 70% 80%, rgba(139, 92, 246, 0.15) 0%, transparent 50%);
+            animation: bgPulse 8s ease-in-out infinite alternate;
+            z-index: -1;
+        }
+
+        @keyframes bgPulse {
+            0% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+
+            100% {
+                transform: translate(-5%, 5%) rotate(3deg);
+            }
+        }
+
+        .container {
+            width: 100%;
+            max-width: 420px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .logo {
+            width: 72px;
+            height: 72px;
+            background: var(--accent-gradient);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            margin: 0 auto 16px;
+            box-shadow: var(--glow);
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 15px;
+            margin-top: 4px;
+        }
+
+        /* Upload Zone */
+        .upload-zone {
+            width: 100%;
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 2px dashed rgba(148, 163, 184, 0.3);
+            border-radius: 24px;
+            padding: 48px 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-zone:hover,
+        .upload-zone.dragover {
+            border-color: var(--accent-primary);
+            background: rgba(59, 130, 246, 0.1);
+            box-shadow: var(--glow);
+            transform: scale(1.02);
+        }
+
+        .upload-zone.dragover {
+            animation: pulse 1s ease infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+            }
+
+            50% {
+                box-shadow: 0 0 40px rgba(59, 130, 246, 0.8);
+            }
+        }
+
+        .upload-icon {
+            font-size: 56px;
+            margin-bottom: 16px;
+            display: block;
+        }
+
+        .upload-text {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .upload-hint {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        /* File List */
+        .file-list {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .file-item {
+            background: var(--bg-glass);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .file-icon {
+            font-size: 32px;
+            width: 48px;
+            height: 48px;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .file-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .file-name {
+            font-weight: 500;
+            font-size: 15px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .file-progress {
+            height: 4px;
+            background: var(--bg-primary);
+            border-radius: 2px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .file-progress-bar {
+            height: 100%;
+            background: var(--accent-gradient);
+            border-radius: 2px;
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+
+        .file-status {
+            font-size: 24px;
+        }
+
+        .file-item.success .file-progress-bar {
+            background: var(--success);
+            width: 100%;
+        }
+
+        .file-item.error .file-progress-bar {
+            background: var(--error);
+        }
+
+        /* Install Prompt */
+        .install-prompt {
+            width: 100%;
+            background: var(--accent-gradient);
+            border-radius: 16px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .install-prompt:hover {
+            transform: scale(1.02);
+            box-shadow: var(--glow);
+        }
+
+        .install-prompt:active {
+            transform: scale(0.98);
+        }
+
+        .install-icon {
+            font-size: 24px;
+        }
+
+        .install-text {
+            flex: 1;
+        }
+
+        .install-title {
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        .install-hint {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        .install-arrow {
+            font-size: 20px;
+        }
+
+        /* Hide install prompt if already installed */
+        @media (display-mode: standalone) {
+            .install-prompt {
+                display: none;
+            }
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: auto;
+            padding-top: 24px;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">📡</div>
+            <h1>AirTransfer</h1>
+            <p class="subtitle">Send files to your Mac instantly</p>
+        </div>
+
+        <div class="upload-zone" id="uploadZone">
+            <span class="upload-icon">📤</span>
+            <p class="upload-text">Tap to select files</p>
+            <p class="upload-hint">or drag & drop here</p>
+        </div>
+
+        <input type="file" id="fileInput" multiple>
+
+        <div class="file-list" id="fileList"></div>
+
+        <div class="install-prompt" id="installPrompt">
+            <span class="install-icon">📲</span>
+            <div class="install-text">
+                <div class="install-title">Add to Home Screen</div>
+                <div class="install-hint">Then share directly from any app!</div>
+            </div>
+            <span class="install-arrow">→</span>
+        </div>
+
+        <div class="share-info" id="shareInfo">
+            <span class="info-icon">💡</span>
+            <div class="info-text">After installing, you can share files directly from any app! <br>
+                <span style="font-size: 11px; color: var(--text-secondary);">(Accept "Not Secure" warning to
+                    proceed)</span>
+            </div>
+        </div>
+
+        <div class="footer">
+            Files saved to Downloads folder
+        </div>
+    </div>
+
+    <style>
+        .share-info {
+            width: 100%;
+            background: var(--bg-glass);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .info-icon {
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .share-info.hidden {
+            display: none;
+        }
+
+        @media (display-mode: standalone) {
+            .install-prompt {
+                display: none;
+            }
+
+            .share-info {
+                display: none;
+            }
+        }
+    </style>
+
+    <script>
+        const uploadZone = document.getElementById('uploadZone');
+        const fileInput = document.getElementById('fileInput');
+        const fileList = document.getElementById('fileList');
+        const installPrompt = document.getElementById('installPrompt');
+        const copyBtn = document.getElementById('copyBtn');
+
+        // File type icons
+        const fileIcons = {
+            image: '🖼️',
+            video: '🎬',
+            audio: '🎵',
+            pdf: '📕',
+            document: '📄',
+            archive: '📦',
+            default: '📁'
+        };
+
+        function getFileIcon(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic', 'heif'].includes(ext)) return fileIcons.image;
+            if (['mp4', 'mov', 'avi', 'mkv', 'webm'].includes(ext)) return fileIcons.video;
+            if (['mp3', 'wav', 'aac', 'm4a', 'flac'].includes(ext)) return fileIcons.audio;
+            if (ext === 'pdf') return fileIcons.pdf;
+            if (['doc', 'docx', 'txt', 'rtf', 'pages'].includes(ext)) return fileIcons.document;
+            if (['zip', 'rar', '7z', 'tar', 'gz'].includes(ext)) return fileIcons.archive;
+            return fileIcons.default;
+        }
+
+        // Click to upload
+        uploadZone.addEventListener('click', () => fileInput.click());
+
+        // Drag and drop
+        uploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadZone.classList.add('dragover');
+        });
+
+        uploadZone.addEventListener('dragleave', () => {
+            uploadZone.classList.remove('dragover');
+        });
+
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
+        });
+
+        // File input change
+        fileInput.addEventListener('change', () => {
+            handleFiles(fileInput.files);
+            fileInput.value = '';
+        });
+
+        function handleFiles(files) {
+            Array.from(files).forEach(uploadFile);
+        }
+
+        function uploadFile(file) {
+            // Create file item UI
+            const item = document.createElement('div');
+            item.className = 'file-item';
+            item.innerHTML = `
+                <div class="file-icon">${getFileIcon(file.name)}</div>
+                <div class="file-info">
+                    <div class="file-name">${file.name}</div>
+                    <div class="file-progress">
+                        <div class="file-progress-bar"></div>
+                    </div>
+                </div>
+                <div class="file-status">⏳</div>
+            `;
+            fileList.insertBefore(item, fileList.firstChild);
+
+            const progressBar = item.querySelector('.file-progress-bar');
+            const status = item.querySelector('.file-status');
+
+            // Upload
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '/upload', true);
+
+            xhr.upload.onprogress = (e) => {
+                if (e.lengthComputable) {
+                    const pct = (e.loaded / e.total) * 100;
+                    progressBar.style.width = pct + '%';
+                }
+            };
+
+            xhr.onload = () => {
+                if (xhr.status === 200) {
+                    item.classList.add('success');
+                    status.textContent = '✅';
+                } else {
+                    item.classList.add('error');
+                    status.textContent = '❌';
+                }
+            };
+
+            xhr.onerror = () => {
+                item.classList.add('error');
+                status.textContent = '❌';
+            };
+
+            xhr.send(formData);
+        }
+
+        // PWA Install Prompt
+        let deferredPrompt;
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+        const shareInfo = document.getElementById('shareInfo');
+
+        // Always show install prompt if not installed
+        if (!isStandalone) {
+            installPrompt.style.display = 'flex';
+        }
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+        });
+
+        installPrompt.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    installPrompt.style.display = 'none';
+                    if (shareInfo) shareInfo.classList.add('hidden');
+                    // Show success message
+                    alert('✅ Installed! Now you can share directly from any app → AirTransfer');
+                }
+                deferredPrompt = null;
+            } else {
+                // Show manual instructions
+                const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+                if (isIOS) {
+                    alert('📲 Tap the Share button (□↑) at the bottom, then scroll down and tap "Add to Home Screen"');
+                } else {
+                    alert('📲 Tap the menu (⋮) at top right, then tap "Add to Home Screen" or "Install app"');
+                }
+            }
+        });
+
+        // Register service worker for PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/static/sw.js').catch(() => { });
+        }
+    </script>
+</body>
+
+</html>

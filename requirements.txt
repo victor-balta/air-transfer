@@ -1,0 +1,7 @@
+flask
+qrcode
+netifaces
+rumps
+Pillow
+pyopenssl
+

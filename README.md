@@ -11,6 +11,21 @@ A lightweight, self-hosted alternative to AirDrop for Android ↔ Mac file trans
 - 🚀 **Fast** - Transfers at local Wi-Fi speeds
 - 🔒 **Private** - Data never leaves your local network
 
+## Setup
+
+**First time setup** (after cloning the repo):
+
+```bash
+# Create virtual environment and install dependencies
+python3 -m venv venv
+./venv/bin/pip install -r requirements.txt
+```
+
+**Requirements:**
+- Python 3.9+
+- macOS (for menu bar app)
+- Both devices on the same Wi-Fi network
+
 ## Quick Start
 
 ### 1. Run the App

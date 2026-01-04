@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+
+# Mac
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Build artifacts
+build/
+dist/
+*.spec
+*.egg-info/
+AppIcon.iconset/
+
+# Local Certs
+certs/
+*.pem
+*.key
+
+# Runtime
+*.log

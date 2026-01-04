@@ -6,100 +6,69 @@ A lightweight, self-hosted alternative to AirDrop for Android ↔ Mac file trans
 
 ## Features
 
-- 📱 **PWA Support** - Add to home screen for one-tap access
-- 🎯 **Android Share Target** - Share directly from any app
-- 🔔 **Native Notifications** - Get notified when files arrive
-- 🎨 **Modern UI** - Beautiful glassmorphism design
-- ⚡ **Fast** - Transfers at your Wi-Fi's max speed
-- 🔒 **Private** - Everything stays on your local network
+- 📱 **Simple Web UI** - Works on any device with a browser
+- 🍎 **Native Mac App** - Menu bar icon, native notifications, and drag-and-drop support
+- 🚀 **Fast** - Transfers at local Wi-Fi speeds
+- 🔒 **Private** - Data never leaves your local network
 
 ## Quick Start
 
-### 1. Start the Server
+### 1. Run the App
 ```bash
-cd ~/Desktop/Projects/airdrop-clone
 ./start.sh
 ```
+This launches the Menu Bar app. A QR code will also appear in your terminal.
 
-### 2. Connect Your Phone (First Time)
-1. Scan the QR code that appears in your terminal
-2. **Important:** You will see a "Not Secure" or "Privacy Error" warning.
-   - This is normal because we are using a self-signed certificate for local security.
-   - Click **Advanced** → **Proceed to... (unsafe)**
-3. When prompted, tap "Add to Home Screen" or "Install App"
-4. You now have an **AirTransfer** app icon!
+### 2. Connect
+Scan the QR code with your phone. 
+- By default, it runs in **HTTP Mode** (Simple Mode) so you can connect instantly without security warnings.
+- Select files to upload, and they will appear in your Mac's `~/Downloads` folder.
 
-### 3. Send Files
-**Option A: From the App**
-- Open AirTransfer from your home screen
-- Tap to select files or drag & drop
+## Advanced Usage
 
-**Option B: From Any App (Share)**
-- Open Gallery, Files, or any app
-- Tap Share → Select "AirTransfer"
-- Files go directly to your Mac!
+### HTTPS Mode (PWA Support)
+If you want to install the app as a PWA or use the Android "Share Target" feature (sharing directly from other apps), you need HTTPS.
 
-## Files Location
+1. Generate a trusted local certificate:
+   ```bash
+   ./gen_certs.sh
+   ```
+   Follow the instructions to install the Root CA on your phone.
 
-All received files are saved to: `~/Downloads`
+2. Run the app:
+   ```bash
+   ./start.sh
+   ```
+   (It automatically detects the certs in `certs/` and switches to HTTPS).
 
-## Architecture
+### Building the Native Mac App
+To get the proper Dock icon and notifications, the app runs as a bundled macOS application. You can rebuild it if you change the code:
 
+```bash
+./build_app.sh
 ```
-┌──────────────────┐         Wi-Fi          ┌──────────────────┐
-│   Samsung S23    │◄──────────────────────►│    Mac Air M4    │
-│                  │                         │                  │
-│  Browser (PWA)   │────── HTTP POST ──────►│  Flask Server    │
-│  Share Target    │                         │  (server.py)     │
-└──────────────────┘                         └──────────────────┘
-                                                     │
-                                                     ▼
-                                              ~/Downloads/
-```
+
+## Troubleshooting
+
+**Notifications not showing?**
+- Open **System Settings** → **Notifications**
+- Find **AirTransfer** (or `org.python.python` if running raw script)
+- Ensure **Allow Notifications** is ON.
+
+**"Connection not private" warning?**
+- You are likely running in HTTPS mode without a trusted cert on your phone.
+- **Fix:** Use HTTP mode (delete `certs/` folder) OR follow the `gen_certs.sh` guide to trust the certificate.
 
 ## Project Structure
 
 ```
-airdrop-clone/
-├── app.py              # Menu bar app entry point
+airtransfer/
+├── app.py              # Main menu bar application (wrapper)
 ├── server.py           # Flask web server
-├── start.sh            # Startup script
-├── templates/
-│   └── index.html      # Mobile web UI
-├── static/
-│   ├── manifest.json   # PWA configuration
-│   ├── sw.js           # Service worker
-│   └── icon-*.png      # App icons
-└── venv/               # Python virtual environment
+├── start.sh            # Launcher script
+├── build_app.sh        # Builds the .app bundle (py2app)
+├── setup.py            # py2app configuration
+├── templates/          # HTML UI
+├── static/             # Icons & Assets
+└── venv/               # Virtual Environment
 ```
-
-## Requirements
-
-- Python 3.9+
-- macOS (for menu bar app)
-- Both devices on the same Wi-Fi network
-
-## Dependencies
-
-```
-flask
-qrcode
-netifaces
-rumps
-Pillow
-```
-
-Install: `pip install -r requirements.txt`
-
-## Troubleshooting
-
-**No notification sound?**
-- Check System Settings → Notifications → terminal-notifier
-- Ensure Do Not Disturb is off
-
-**Can't connect from phone?**
-- Both devices must be on the same Wi-Fi
-- Check your firewall settings
-
-**Port already in use?**
-- The app automatically tries ports 5000-5099
